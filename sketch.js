@@ -52,6 +52,7 @@ const machineWidth = 80;
 const machineHeight = machineWidth * 9 / 16; // proportions according to the image
 const pipeLengthMult = 0.87688219663; // relative to drilling machine width
 const pipeLength = Math.floor(pipeLengthMult * machineWidth)- 2; // -2 accounts for the rounding of the pipe
+const penetrableInclusions = false;
 
 const startingDepth = 2;
 const startingX = 90;
@@ -229,6 +230,21 @@ function createHddScene() {
 
   drawRiver(hddScene, riverColor);
 
+  if (penetrableInclusions){
+    // penetrable inclusions
+    hddScene.colorMode(HSB);
+    for (let i = 0; i < 5; i++) {
+      let r = random(2, 10);
+      let x = random(0, width);
+      let y = random(groundLevel + 50, height - 50);
+      boulders.push([x, y, r]);
+      hddScene.fill(24, random(10, 20), 30);
+      hddScene.circle(x, y, r * 2);
+    }
+    hddScene.colorMode(RGB);
+  }
+
+  // boulders
   for (let i = 0; i < 10; i++) {
     let r = random(8, 36);
     let x = random(0, width);
