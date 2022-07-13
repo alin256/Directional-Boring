@@ -25,6 +25,7 @@ let seedDiv;
 // The turning radius to be computed
 let turnCircleRadius;
 let boulders;
+let visibleBoulders;
 let canvas;
 
 // images of the drilling machine
@@ -250,6 +251,7 @@ function createHddScene() {
     let x = random(0, width);
     let y = random(groundLevel + 50, height - 50);
     boulders.push([x, y, r]);
+    visibleBoulders.push(false);
     hddScene.fill(boulderColor);
     hddScene.circle(x, y, r * 2);
   }
@@ -294,6 +296,7 @@ function startDrill() {
   startCount = 0;
   sideTrackCount = 0;
   boulders = [];
+  visibleBoulders = [];
   bias = 1;
   state = 'PAUSED';
   startButton.html('start');
@@ -409,6 +412,18 @@ function drill() {
   fogOfUncertinty.noStroke();
   fogOfUncertinty.fill(255);
   fogOfUncertinty.circle(pos.x, pos.y, goal.w*2);
+  for (let i = 0; i<boulders.length; ++i) {
+    if (!visibleBoulders[i]){
+      // 0.8 means that we are a bit closer than the radius before we identify the position
+      if (dist(pos.x, pos.y, boulders[i][0], boulders[i][1]) < goal.w * 0.8 + boulders[i][2]){
+        visibleBoulders[i] = true;
+      }
+    }
+    if (visibleBoulders[i]){
+      fogOfUncertinty.circle(boulders[i][0], boulders[i][1], boulders[i][2]*2);
+    }
+  }
+  
   pos.add(dir);
   if (pos.x < 0 || pos.x > width || pos.y > height) {
     state = 'LOSE';
