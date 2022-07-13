@@ -26,6 +26,7 @@ let seedDiv;
 let turnCircleRadius;
 let boulders;
 let visibleBoulders;
+let seismicPoints;
 let canvas;
 
 // images of the drilling machine
@@ -460,6 +461,7 @@ function drill() {
 }
 
 function drawReflection(reflectionImage) {
+  seismicPoints = [];
   const spacing = goal.w;
   const step = 1;
   const visualRad = 3;
@@ -468,6 +470,7 @@ function drawReflection(reflectionImage) {
     let minTravelDist = computeReflextionTimeSinglePoint(x, x + spacing);
     let distToObjWithNoize = (100 + random(-10, 10)) / 100. * minTravelDist / 2;
     let xMid = x + spacing / 2;
+    seismicPoints.push(distToObjWithNoize + groundLevel);
     reflectionImage.fill(125);
     reflectionImage.noStroke();
     reflectionImage.circle(xMid, distToObjWithNoize + groundLevel, visualRad);
@@ -596,7 +599,8 @@ function drawEndGameStatsAtY(textY){
 
 // Draw loop
 function draw() {
-
+  // push();
+  // scale(1/6);
   // Dril!
   if (state == "DRILLING") drill();
 
@@ -741,4 +745,5 @@ function draw() {
     // Starting idea for a score
     drawEndGameStatsAtY(groundLevel + 96);
   }
+  // pop();
 }
