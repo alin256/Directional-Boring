@@ -243,8 +243,12 @@ function pullBack() {
       pathPosition = path.length - 1;
       pos = path[pathPosition][0].copy();
       dir = path[pathPosition][1].copy();
-    }
-    updateStartButtonText();
+      updateStartButtonText();
+      return true;
+    }else{
+      updateStartButtonText();
+      return false;
+    }    
   }
 }
 
@@ -632,7 +636,10 @@ function resolveAction(action){
     startStopAction();
     return;
   } else if (action == 3) { // pull back
-    pullBack();
+    let success = pullBack();
+    if (!success){
+      startStopAction();
+    }
     return;
   } else {
     if (state == "STUCK" || state == "PAUSED") {
