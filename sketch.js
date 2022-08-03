@@ -24,6 +24,7 @@ let path;
 let reversePath;
 let pathPosition;
 let finalPathLength;
+let finalScore;
 let oldPaths;
 let actionSequence;
 // let randomTurnResistance = 0;
@@ -399,6 +400,8 @@ function startDrill() {
     [createVector(goal.x + goal.w, groundLevel - 4)]];
   actionSequence = [];
   oldPaths = [];
+  finalScore = undefined;
+  finalPathLength = undefined;
   pathPosition = -1;
   stuckCount = 0;
   startCount = 0;
@@ -639,6 +642,27 @@ function resolveAction(action){
   }
 }
 
+function getStateForAgent(){
+  return [pos.x, pos.y, dir.x, dir.y, bias];
+}
+
+function getDoneForAgent(){
+  if (finalScore != undefined){
+    return true;
+  }else{
+    return false;
+  }
+}
+
+function getValueForAgent(){
+  if (finalScore != undefined){
+    return finalScore;
+  }else{
+    // minus proximity to the goal
+    return 1000 - Math.ceil(dist(pos.x, pos.y, goal.x + goal.w/2, groundLevel));
+  }
+}
+
 function takeAction(){
   let action;
   if (playback){
@@ -648,10 +672,23 @@ function takeAction(){
     }
   }else if (serverAgent && state != 'WIN' && state != 'LOSE') {
     if (Math.random() < 1/(60*0.25)) {
+      // cur_state = cur['state']
+      // cur_value = cur['value']
+      // cur_done = cur['done']
+      data = {
+        'state': getStateForAgent(),
+        'value': getValueForAgent(),
+        'done': getDoneForAgent()
+      }
       fetch(serverAgent,
         {
           credentials: 'include',
-          method: 'GET'
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+          body: JSON.stringify(data) // body data type must match "Content-
         })
         .then(function (res) {
           if (!res.ok) {
@@ -995,8 +1032,12 @@ function drawEndGameStatsAtY(textY){
   text(`stuck count: ${stuckCount} *${stuckMult} = ${padNumber(stuckCost)}-`, textX, textY);
   reward -= stuckCost;
 
+  if (finalScore === undefined){
+    finalScore = reward;
+  }
+
   textY += fontSize * 1.5;
-  text(`FINAL SCORE = ${padNumber(reward)} `, textX, textY);
+  text(`FINAL SCORE = ${padNumber(finalScore)} `, textX, textY);
 
   // let compressedString = pathToString();
   // let restoredBias = stringToBias(compressedString);
