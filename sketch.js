@@ -656,7 +656,11 @@ function resolveAction(action){
 }
 
 function getStateForAgent(){
-  return [pos.x, pos.y, dir.x, dir.y, bias];
+  //scaling to -1 .. 1
+  return [pos.x/(width/2) - 1, 
+          pos.y/(height/2) - 1, 
+          dir.x, dir.y, 
+          bias];
 }
 
 function getDoneForAgent(){
