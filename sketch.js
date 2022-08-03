@@ -659,7 +659,7 @@ function getValueForAgent(){
     return finalScore;
   }else{
     // minus proximity to the goal
-    return 1000 - Math.ceil(dist(pos.x, pos.y, goal.x + goal.w/2, groundLevel));
+    return 1000 - dist(pos.x, pos.y, goal.x + goal.w/2, groundLevel);
   }
 }
 
