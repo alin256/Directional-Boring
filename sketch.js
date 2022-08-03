@@ -109,7 +109,7 @@ let reflections;
 let startButton;
 let pullBackButton;
 let toggleButton;
-let newGameButton;
+
 
 // Divs with information
 let curLevelDiv;
@@ -670,12 +670,12 @@ function takeAction(){
     if (decisionNumber < playback.length){
       action = playback[decisionNumber];
     }
-  }else if (serverAgent && state != 'WIN' && state != 'LOSE') {
+  }else if (serverAgent) {
     if (Math.random() < 1/(60*0.25)) {
       // cur_state = cur['state']
       // cur_value = cur['value']
       // cur_done = cur['done']
-      data = {
+      let data = {
         'state': getStateForAgent(),
         'value': getValueForAgent(),
         'done': getDoneForAgent()
@@ -691,6 +691,9 @@ function takeAction(){
           body: JSON.stringify(data) // body data type must match "Content-
         })
         .then(function (res) {
+          if (data['done']){
+            newGameAction();
+          }
           if (!res.ok) {
             // todo improve logging
             alert("Something wrong with the server");
