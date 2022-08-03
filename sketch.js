@@ -681,6 +681,7 @@ function takeAction(){
         'value': getValueForAgent(),
         'done': getDoneForAgent()
       }
+      finalScore = undefined;
       fetch(serverAgent,
         {
           credentials: 'include',
