@@ -994,7 +994,7 @@ function drawEndGameStatsAtY(textY){
     reward = 5000;
     text(`mission reward = ${padNumber(reward)}+`, textX, textY);
   } else {
-    reward = 1000;
+    reward = 0;
     text(`partial reward = ${padNumber(reward)}+`, textX, textY);
   }
   textY += fontSize;
@@ -1061,6 +1061,7 @@ function draw() {
       takeAction();
     }
   }
+
   // Dril!
   if (state == "DRILLING"){ 
     // frameRate(60); for the setting correct frame rate depending on the state in the future
