@@ -42,6 +42,9 @@ let startDiv;
 let sideTracksDiv;
 let stuckDiv;
 
+let prevAgentIntormation = {};
+let waitingForAgentAction = false;
+
 // Current state of game
 let state;
 let currentSeed = undefined;
@@ -422,7 +425,10 @@ function startDrill() {
   // Related circle size
   const turnCircleLen = (PI * 2) / turnAnglePerPixel;
   turnCircleRadius = turnCircleLen / PI / 2;
-  
+
+  // for tracking agent interactions
+  waitingForAgentAction = false;
+  prevAgentIntormation = {};
 
   createHddScene();
   createFogOfUncertainty();
@@ -677,7 +683,7 @@ function takeAction(){
     if (decisionNumber < playback.length){
       action = playback[decisionNumber];
     }
-  }else if (serverAgent) {
+  }else if (serverAgent && !waitingForAgentAction) {
     // todo take care of tracking previous in the client???
     if (Math.random() < 1/(60*0.25)) {
       // cur_state = cur['state']
@@ -686,9 +692,16 @@ function takeAction(){
       let data = {
         'state': getStateForAgent(),
         'value': getValueForAgent(),
-        'done': getDoneForAgent()
+        'done': getDoneForAgent(),
+        'prev': prevAgentIntormation
       }
+      data['prev']['prev'] = '';
+
+      // when we sent the request we do some bookkeeping
       finalScore = undefined;
+      waitingForAgentAction = true;
+      prevAgentIntormation = data;
+
       fetch(serverAgent,
         {
           credentials: 'include',
@@ -714,6 +727,8 @@ function takeAction(){
               let action = json["action_id"];
               if (typeof action == 'number') {
                 resolveAction(action);
+                prevAgentIntormation['action'] = action;
+                waitingForAgentAction = false;
               }
             }
             );
