@@ -671,6 +671,7 @@ function takeAction(){
       action = playback[decisionNumber];
     }
   }else if (serverAgent) {
+    // todo take care of tracking previous in the client???
     if (Math.random() < 1/(60*0.25)) {
       // cur_state = cur['state']
       // cur_value = cur['value']
