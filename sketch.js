@@ -96,6 +96,7 @@ let pipeLengthSteps = pipeLengthPixels;
 
 // playback string undefined
 let playback = undefined;
+let serverAgent = '/';
 
 // Pixel map for scene
 let hddScene;
@@ -623,27 +624,58 @@ function hyperLink(link, text){
   return `<a href="${link}">${text}</a> `;
 }
 
+function resolveAction(action){
+  if (action == 1) { // pause
+    startStopAction();
+    return;
+  } else if (action == 3) { // pull back
+    pullBack();
+    return;
+  } else {
+    if (state == "STUCK" || state == "PAUSED") {
+      startStopAction();
+    }
+    bias = action - 1;
+  }
+}
+
 function takeAction(){
+  let action;
   if (playback){
     let decisionNumber = actionSequence.length;
     if (decisionNumber < playback.length){
-      let action = playback[decisionNumber];
-      if (action == 1){ // pause
-        startStopAction();
-        return;
-      }else if (action == 3){ // pull back
-        pullBack();
-        return;
-      } else {
-        if (decisionNumber == 0){
-          startStopAction();
-        }else if (state == "STUCK" || state == "PAUSED"){
-          startStopAction();
-        }
-        bias = playback[decisionNumber] - 1;
-      }
+      action = playback[decisionNumber];
+    }
+  }else if (serverAgent && state != 'WIN' && state != 'LOSE') {
+    if (Math.random() < 1/(60*0.25)) {
+      fetch(serverAgent,
+        {
+          credentials: 'include',
+          method: 'GET'
+        })
+        .then(function (res) {
+          if (!res.ok) {
+            // todo improve logging
+            alert("Something wrong with the server");
+          }
+          else {
+            console.log("action request went normally");
+            res.json().then(function (json) {
+              console.log("recieved " + JSON.stringify(json));
+              let action = json["action_id"];
+              if (typeof action == 'number') {
+                resolveAction(action);
+              }
+            }
+            );
+          }
+        });
     }
   }
+  if (action === undefined){
+    return;
+  }
+  resolveAction(action);
 }
 
 // One drill step
@@ -974,7 +1006,7 @@ function drawEndGameStatsAtY(textY){
 
 // Draw loop
 function draw() {
-  if (playback){
+  if (playback || serverAgent){
     if (state == "STUCK" || (state == "PAUSED" && path.length > 0)){
       if (playbackCountDown > 0){
         playbackCountDown -= deltaSpeedCurGame;
