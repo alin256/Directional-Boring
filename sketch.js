@@ -773,14 +773,18 @@ async function takeAction() {
           },
           referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
           body: JSON.stringify(data) // body data type must match "Content-
+        }).then(function (res) {
+          let futureAction = await actionFromResponce(res, false);
+        }).catch((error) => {
+          // Your error is here!
+          console.log(error)
         });
-      //.then(actionFromResponce);
+      //let futureAction = await actionFromResponce(recieved_responce, false);
       if (data['done']) {
         newGameAction();
       }
-      let futureAction = await actionFromResponce(recieved_responce, false);
       // we do not use it yet and it has been saved to previous action in the function
-    } else if(agentActionCountDown == agentObservationDelay){
+    } else if (agentActionCountDown == agentObservationDelay) {
       // take a delayed action
       action = prevAgentIntormation['action'];
     }
