@@ -87,6 +87,11 @@ const machineHeight = machineWidth * 9 / 16; // proportions according to the ima
 const pipeLengthMult = 0.87688219663; // relative to drilling machine width
 const pipeLengthPixels = Math.floor(pipeLengthMult * machineWidth) - 2; // -2 accounts for the rounding of the pipe
 
+// scoring consts
+const stuckMult = Math.ceil(pipeLengthPixels/10) * 10;
+const startMult = Math.ceil(pipeLengthPixels/40) * 10;
+const sideTrackMult = Math.ceil(pipeLengthPixels/20) * 10;
+
 // constants for machine visualization
 const startingDepth = 2;
 const startingX = 90;
@@ -658,10 +663,21 @@ function resolveAction(action){
 
 function getStateForAgent(){
   //scaling to -1 .. 1
-  return [pos.x/(width/2) - 1, 
+  return [pos.x/(width/2) - 1,  // 0
           pos.y/(height/2) - 1, 
-          dir.x, dir.y, 
-          bias];
+          dir.x, dir.y,  
+          bias,
+          // state bools
+          state=='DRILLING' | 0, // 4
+          state=='STUCK' | 0,
+          state=='PAUSED' | 0,
+          state=='CONNECTION' | 0,
+          // wearing off
+          startCount / maxStarts,
+          sideTrackCount / maxSideTracks, // 9
+          stuckCount / maxStuckTimes
+        ];
+  // total 11 variables
 }
 
 function getDoneForAgent(){
@@ -672,12 +688,17 @@ function getDoneForAgent(){
   }
 }
 
-function getValueForAgent(){
-  if (finalScore != undefined){
+function getValueForAgent() {
+  if (finalScore != undefined) {
     return finalScore;
-  }else{
+  } else {
     // minus proximity to the goal
-    return 1000 - dist(pos.x, pos.y, goal.x + goal.w/2, groundLevel);
+    // return 1000 - dist(pos.x, pos.y, goal.x + goal.w/2, groundLevel);
+    return 1000
+      - dist(pos.x, pos.y, goal.x + goal.w / 2, groundLevel)
+      - startCount * startMult
+      - sideTrackCount * sideTrackMult
+      - stuckCount * stuckMult;
   }
 }
 
@@ -1057,19 +1078,17 @@ function drawEndGameStatsAtY(textY){
   reward -= length;
   
   textY += fontSize;
-  const startMult = Math.ceil(pipeLengthPixels/40) * 10;
   let startCost = startCount * startMult;
   text(`starts: ${startCount} *${startMult} = ${padNumber(startCost)}-`, textX, textY);
   reward -= startCost;
 
   textY += fontSize;
-  const sideTrackMult = Math.ceil(pipeLengthPixels/20) * 10;
   let sideTrackCost = sideTrackCount * sideTrackMult;
   text(`side-tracks: ${sideTrackCount} *${sideTrackMult} = ${padNumber(sideTrackCost)}-`, textX, textY);
   reward -= sideTrackCost;
 
   textY += fontSize;
-  const stuckMult = Math.ceil(pipeLengthPixels/10) * 10;
+
   let stuckCost = stuckCount * stuckMult;
   text(`stuck count: ${stuckCount} *${stuckMult} = ${padNumber(stuckCost)}-`, textX, textY);
   reward -= stuckCost;
