@@ -723,6 +723,7 @@ function takeAction(){
           if (!res.ok) {
             // todo improve logging
             alert("Something wrong with the server");
+            waitingForAgentAction = false;
           }
           else {
             console.log("action request went normally");
