@@ -667,22 +667,23 @@ function resolveAction(action){
 
 function getStateForAgent(){
   //scaling to -1 .. 1
-  return [pos.x/(width/2) - 1,  // 0
+  return [pos.x/(width/2) - 1,  
           pos.y/(height/2) - 1, 
-          dir.x, dir.y,  
-          bias,
+          dir.x, 
+          dir.y,  
+          bias,  //5
           // state bools
-          state=='DRILLING' | 0, // 4
+          state=='DRILLING' | 0, 
           state=='STUCK' | 0,
           state=='PAUSED' | 0,
           state=='CONNECTION' | 0,
           // wearing off
-          (path.length % pipeLengthSteps) / pipeLengthSteps,
-          startCount / maxStarts, // 9
+          (path.length % pipeLengthSteps) / pipeLengthSteps, //10
+          startCount / maxStarts, 
           sideTrackCount / maxSideTracks, 
           stuckCount / maxStuckTimes
         ];
-  // total 12 variables
+  // total 13 variables
 }
 
 function getDoneForAgent(){
