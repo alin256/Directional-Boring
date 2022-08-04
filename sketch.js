@@ -36,15 +36,18 @@ const maxStuckTimes = 3;
 const maxSideTracks = 5;
 const referenceSaturation = 60;
 const numberOfBoulders = 10;
-// const randomTurnCorrelation = 0.2;
+
+// agent behaviour constants
+let prevAgentIntormation = {};
+let waitingForAgentAction = false;
+const agentActionDelay = 5;
+const agentObservationDelay = 5;
+let agentActionCountDown = 0; // apply when it is eaual to observation delay
 
 // corresponding Divs
 let startDiv;
 let sideTracksDiv;
 let stuckDiv;
-
-let prevAgentIntormation = {};
-let waitingForAgentAction = false;
 
 // Current state of game
 let state;
@@ -435,6 +438,7 @@ function startDrill() {
   // for tracking agent interactions
   waitingForAgentAction = false;
   prevAgentIntormation = {};
+  agentActionCountDown = 0;
 
   createHddScene();
   createFogOfUncertainty();
@@ -673,11 +677,12 @@ function getStateForAgent(){
           state=='PAUSED' | 0,
           state=='CONNECTION' | 0,
           // wearing off
-          startCount / maxStarts,
-          sideTrackCount / maxSideTracks, // 9
+          (path.length % pipeLengthSteps) / pipeLengthSteps,
+          startCount / maxStarts, // 9
+          sideTrackCount / maxSideTracks, 
           stuckCount / maxStuckTimes
         ];
-  // total 11 variables
+  // total 12 variables
 }
 
 function getDoneForAgent(){
@@ -701,7 +706,6 @@ function getValueForAgent() {
       - stuckCount * stuckMult;
   }
 }
-
 
 function actionFromResponce(res, resolve=true) {
   if (data['done']) {
@@ -739,9 +743,10 @@ function takeAction() {
     if (decisionNumber < playback.length) {
       action = playback[decisionNumber];
     }
-  } else if (serverAgent && !waitingForAgentAction) {
-    // todo take care of tracking previous in the client???
-    if (Math.random() < 1 / (60 * 0.25)) {
+  } else if (serverAgent) {
+    if (!waitingForAgentAction && agentActionCountDown <= 0) {
+      // todo take care of tracking previous in the client???
+      // if (Math.random() < 1 / (60 * 0.25)) {
       // cur_state = cur['state']
       // cur_value = cur['value']
       // cur_done = cur['done']
@@ -756,8 +761,10 @@ function takeAction() {
       // when we sent the request we do some bookkeeping
       finalScore = undefined;
       waitingForAgentAction = true;
+      agentActionCountDown = agentActionDelay + agentObservationDelay;
       prevAgentIntormation = data;
 
+      // todo here in await mode
       let recieved_responce = await fetch(serverAgent,
         {
           credentials: 'include',
@@ -768,8 +775,12 @@ function takeAction() {
           referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
           body: JSON.stringify(data) // body data type must match "Content-
         });
-        //.then(actionFromResponce);
-        action = actionFromResponce(recieved_responce, false);
+      //.then(actionFromResponce);
+      let futureAction = actionFromResponce(recieved_responce, false);
+      // we do not use it yet and it has been saved to previous action in the function
+    } else if(agentActionCountDown == agentObservationDelay){
+      // take a delayed action
+      action = prevAgentIntormation['action'];
     }
   }
   if (action === undefined) {
@@ -1018,6 +1029,10 @@ function actionSequenceToString(){
     sequence += String.fromCharCode(number);
   }
   // btoa encodes string to URL string
+  // todo change btoa
+  //Decodes a string into bytes using Latin-1 (ISO-8859), and encodes those bytes into a string using Base64.
+  //The data may be any JavaScript-value that can be coerced into a string.
+  //This function is only provided for compatibility with legacy web platform APIs and should never be used in new code, because they use strings to represent binary data and predate the introduction of typed arrays in JavaScript. For code running using Node.js APIs, converting between base64-encoded strings and binary data should be performed using Buffer.from(str, 'base64') andbuf.toString('base64').
   return btoa(sequence);
 }
 
@@ -1119,6 +1134,13 @@ function draw() {
       takeAction();
     }
   }
+
+  // reducing countdown time
+  if (serverAgent){
+    agentActionCountDown--;
+  }
+
+  // todo consider waiting for action here so that connection is included in the waiting
 
   // Dril!
   if (state == "DRILLING"){ 
