@@ -35,6 +35,7 @@ const maxStarts = 9;
 const maxStuckTimes = 3;
 const maxSideTracks = 5;
 const referenceSaturation = 60;
+const numberOfBoulders = 10;
 // const randomTurnCorrelation = 0.2;
 
 // corresponding Divs
@@ -340,7 +341,7 @@ function createHddScene() {
 
   drawRiver(hddScene, riverColor);
 
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < numberOfBoulders; i++) {
     let r = random(8, 36);
     let x = random(0, width);
     let y = random(groundLevel + 50, height - 50);
@@ -680,16 +681,46 @@ function getValueForAgent(){
   }
 }
 
-function takeAction(){
+
+function actionFromResponce(res, resolve=true) {
+  if (data['done']) {
+    newGameAction();
+  }
+  if (!res.ok) {
+    // todo improve logging
+    alert("Something wrong with the server");
+    waitingForAgentAction = false;
+    return undefined;
+  }
+  else {
+    console.log("action request went normally");
+    json = await res.json();
+    //.then(function (json) {
+    console.log("recieved " + JSON.stringify(json));
+    let action = json["action_id"];
+    if (typeof action == 'number') {
+      // todo fix
+      if (resolve){
+        resolveAction(action);
+      }
+      prevAgentIntormation['action'] = action;
+      waitingForAgentAction = false;
+      return action;
+    }
+  }
+  // );
+}
+
+function takeAction() {
   let action;
-  if (playback){
+  if (playback) {
     let decisionNumber = actionSequence.length;
-    if (decisionNumber < playback.length){
+    if (decisionNumber < playback.length) {
       action = playback[decisionNumber];
     }
-  }else if (serverAgent && !waitingForAgentAction) {
+  } else if (serverAgent && !waitingForAgentAction) {
     // todo take care of tracking previous in the client???
-    if (Math.random() < 1/(60*0.25)) {
+    if (Math.random() < 1 / (60 * 0.25)) {
       // cur_state = cur['state']
       // cur_value = cur['value']
       // cur_done = cur['done']
@@ -706,7 +737,7 @@ function takeAction(){
       waitingForAgentAction = true;
       prevAgentIntormation = data;
 
-      fetch(serverAgent,
+      let recieved_responce = await fetch(serverAgent,
         {
           credentials: 'include',
           method: 'POST',
@@ -715,33 +746,12 @@ function takeAction(){
           },
           referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
           body: JSON.stringify(data) // body data type must match "Content-
-        })
-        .then(function (res) {
-          if (data['done']){
-            newGameAction();
-          }
-          if (!res.ok) {
-            // todo improve logging
-            alert("Something wrong with the server");
-            waitingForAgentAction = false;
-          }
-          else {
-            console.log("action request went normally");
-            res.json().then(function (json) {
-              console.log("recieved " + JSON.stringify(json));
-              let action = json["action_id"];
-              if (typeof action == 'number') {
-                resolveAction(action);
-                prevAgentIntormation['action'] = action;
-                waitingForAgentAction = false;
-              }
-            }
-            );
-          }
         });
+        //.then(actionFromResponce);
+        action = actionFromResponce(recieved_responce, false);
     }
   }
-  if (action === undefined){
+  if (action === undefined) {
     return;
   }
   resolveAction(action);
