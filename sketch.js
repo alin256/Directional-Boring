@@ -764,6 +764,7 @@ async function takeAction() {
       prevAgentIntormation = data;
 
       // todo here in await mode
+      // todo fix await // does not work now
       let recieved_responce = await fetch(serverAgent,
         {
           credentials: 'include',
