@@ -773,7 +773,7 @@ async function takeAction() {
           },
           referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
           body: JSON.stringify(data) // body data type must match "Content-
-        }).then(function (res) {
+        }).then(async function (res) {
           let futureAction = await actionFromResponce(res, false);
         }).catch((error) => {
           // Your error is here!
