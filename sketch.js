@@ -707,10 +707,8 @@ function getValueForAgent() {
   }
 }
 
-function actionFromResponce(res, resolve=true) {
-  if (data['done']) {
-    newGameAction();
-  }
+async function actionFromResponce(res, resolve=true) {
+
   if (!res.ok) {
     // todo improve logging
     alert("Something wrong with the server");
@@ -736,7 +734,7 @@ function actionFromResponce(res, resolve=true) {
   // );
 }
 
-function takeAction() {
+async function takeAction() {
   let action;
   if (playback) {
     let decisionNumber = actionSequence.length;
@@ -776,7 +774,10 @@ function takeAction() {
           body: JSON.stringify(data) // body data type must match "Content-
         });
       //.then(actionFromResponce);
-      let futureAction = actionFromResponce(recieved_responce, false);
+      if (data['done']) {
+        newGameAction();
+      }
+      let futureAction = await actionFromResponce(recieved_responce, false);
       // we do not use it yet and it has been saved to previous action in the function
     } else if(agentActionCountDown == agentObservationDelay){
       // take a delayed action
@@ -1122,16 +1123,16 @@ function drawEndGameStatsAtY(textY){
 }
 
 // Draw loop
-function draw() {
+async function draw() {
   if (playback || serverAgent){
     if (state == "STUCK" || (state == "PAUSED" && path.length > 0)){
       if (playbackCountDown > 0){
         playbackCountDown -= deltaSpeedCurGame;
       }else{
-        takeAction();
+        await takeAction();
       }
     }else{
-      takeAction();
+      await takeAction();
     }
   }
 
