@@ -35,7 +35,7 @@ const maxStarts = 9;
 const maxStuckTimes = 3;
 const maxSideTracks = 5;
 const referenceSaturation = 60;
-const numberOfBoulders = 10;
+const numberOfBoulders = 0;
 
 // agent behaviour constants
 let prevAgentIntormation = {};
