@@ -443,6 +443,9 @@ function startDrill() {
   createHddScene();
   createFogOfUncertainty();
   createReflections();
+
+  // todo just in case
+  loop();
 }
 
 function generateLink(randomness, seed, speed, replay){
@@ -709,11 +712,11 @@ function getValueForAgent() {
 }
 
 async function actionFromResponce(res, resolve=true) {
-
   if (!res.ok) {
     // todo improve logging
     alert("Something wrong with the server");
     waitingForAgentAction = false;
+    loop();
     return undefined;
   }
   else {
@@ -729,6 +732,7 @@ async function actionFromResponce(res, resolve=true) {
       }
       prevAgentIntormation['action'] = action;
       waitingForAgentAction = false;
+      loop();
       return action;
     }
   }
@@ -760,6 +764,7 @@ async function takeAction() {
       // when we sent the request we do some bookkeeping
       finalScore = undefined;
       waitingForAgentAction = true;
+      noLoop();
       agentActionCountDown = agentActionDelay + agentObservationDelay;
       prevAgentIntormation = data;
       let futureAction;
@@ -780,6 +785,7 @@ async function takeAction() {
       } catch (error) {
         console.log(error);
         waitingForAgentAction = false;
+        loop();
       }
       // .then(async function (res) {
       // })
