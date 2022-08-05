@@ -27,6 +27,7 @@ let finalPathLength;
 let finalScore;
 let oldPaths;
 let actionSequence;
+let actionInformation;
 // let randomTurnResistance = 0;
 let stuckCount = 0;
 let sideTrackCount = 0;
@@ -725,6 +726,7 @@ async function actionFromResponce(res, resolve=true) {
     //.then(function (json) {
     console.log("recieved " + JSON.stringify(json));
     let action = json["action_id"];
+    actionInformation = json['info'] + action;
     if (typeof action == 'number') {
       // todo fix
       if (resolve){
@@ -1344,6 +1346,13 @@ async function draw() {
     textSize(24);
     textFont('courier');
     text('STUCK! ('+stuckCount+'/'+maxStuckTimes+' times)', width / 2, groundLevel / 2);
+  } else if(actionInformation){
+    textAlign(CENTER, TOP);
+    noStroke();
+    fill(255);
+    textSize(24);
+    textFont('courier');
+    text(actionInformation, width / 2, groundLevel / 2);
   }
 
   if (!playback && state != "DRILLING" && state != "CONNECTION"){
