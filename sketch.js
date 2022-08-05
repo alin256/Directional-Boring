@@ -762,25 +762,30 @@ async function takeAction() {
       waitingForAgentAction = true;
       agentActionCountDown = agentActionDelay + agentObservationDelay;
       prevAgentIntormation = data;
-
+      let futureAction;
       // todo here in await mode
       // todo fix await // does not work now
-      let recieved_responce = await fetch(serverAgent,
-        {
-          credentials: 'include',
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-          body: JSON.stringify(data) // body data type must match "Content-
-        }).then(async function (res) {
-          let futureAction = await actionFromResponce(res, false);
-        }).catch((error) => {
-          // Your error is here!
-          console.log(error)
-        });
-      //let futureAction = await actionFromResponce(recieved_responce, false);
+      try {
+        let recievedResponce = await fetch(serverAgent,
+          {
+            credentials: 'include',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body: JSON.stringify(data) // body data type must match "Content-
+          });
+        futureAction = await actionFromResponce(recievedResponce, false);
+      } catch (error) {
+        console.log(error);
+        waitingForAgentAction = false;
+      }
+      // .then(async function (res) {
+      // })
+      // .catch((error) => {
+      // Your error is here!
+      // });
       if (data['done']) {
         newGameAction();
       }
