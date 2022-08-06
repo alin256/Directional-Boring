@@ -97,6 +97,7 @@ const pipeLengthPixels = Math.floor(pipeLengthMult * machineWidth) - 2; // -2 ac
 const stuckMult = Math.ceil(pipeLengthPixels/10) * 10;
 const startMult = Math.ceil(pipeLengthPixels/40) * 10;
 const sideTrackMult = Math.ceil(pipeLengthPixels/20) * 10;
+const unfinnishedDistMult = 3;
 
 // constants for machine visualization
 const startingDepth = 2;
@@ -716,15 +717,16 @@ function getValueForAgent() {
   } else {
     // minus proximity to the goal
     // return 1000 - dist(pos.x, pos.y, goal.x + goal.w/2, groundLevel);
-    return 1000
-      - dist(pos.x, pos.y, goal.x + goal.w / 2, groundLevel)
+    return 2500
+      - dist(pos.x, pos.y, goal.x + goal.w / 2, groundLevel) * unfinnishedDistMult
+      - usedPipeCount * pipeLengthMult
       - startCount * startMult
       - sideTrackCount * sideTrackMult
       - stuckCount * stuckMult;
   }
 }
 
-async function actionFromResponce(res, resolve=true) {
+async function actionFromResponce(res, resolve = true) {
   if (!res.ok) {
     // todo improve logging
     alert("Something wrong with the server");
@@ -738,10 +740,13 @@ async function actionFromResponce(res, resolve=true) {
     //.then(function (json) {
     console.log("recieved " + JSON.stringify(json));
     let action = json["action_id"];
-    actionInformation = json['info'] + action;
+    actionInformation = 
+      Math.round(prevAgentIntormation['value']) + ' '
+      + json['info'] + ' '
+      + action;
     if (typeof action == 'number') {
       // todo fix
-      if (resolve){
+      if (resolve) {
         resolveAction(action);
       }
       prevAgentIntormation['action'] = action;
@@ -1117,7 +1122,7 @@ function drawEndGameStatsAtY(textY){
   } else{
     let remainingDistance = Math.ceil(dist(pos.x, pos.y, goal.x + goal.w/2, groundLevel));
     text(`remaining distance = ${padNumber(remainingDistance)}-`, textX, textY);
-    reward -= remainingDistance;
+    reward -= remainingDistance * unfinnishedDistMult;
   }
   textY += fontSize;
 
