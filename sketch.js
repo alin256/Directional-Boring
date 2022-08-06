@@ -690,11 +690,12 @@ function getStateForAgent(){
           state=='CONNECTION' | 0,
           // wearing off
           (path.length % pipeLengthSteps) / pipeLengthSteps, //10
+          usedPipeCount / maxPipeCount,
           startCount / maxStarts, 
           sideTrackCount / maxSideTracks, 
           stuckCount / maxStuckTimes
         ];
-  // total 13 variables
+  // total 14 variables
 }
 
 function getDoneForAgent(){
