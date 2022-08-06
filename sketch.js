@@ -31,10 +31,12 @@ let actionInformation;
 // let randomTurnResistance = 0;
 let stuckCount = 0;
 let sideTrackCount = 0;
+let usedPipeCount = 0;
 let startCount = 0;
 const maxStarts = 9;
 const maxStuckTimes = 3;
 const maxSideTracks = 5;
+const maxPipeCount = 4 * 3;
 const referenceSaturation = 60;
 const numberOfBoulders = 0;
 
@@ -47,7 +49,7 @@ let agentActionCountDown = 0; // apply when it is eaual to observation delay
 
 // corresponding Divs
 let startDiv;
-let sideTracksDiv;
+let usedPipeDiv;
 let stuckDiv;
 
 // Current state of game
@@ -191,8 +193,9 @@ function startStopUserAction(){
   }
 }
 
-function updateSideTrackDiv(){
-  sideTracksDiv.html(`Side tracks: ${sideTrackCount}/${maxSideTracks}`);
+function updateUsedPipeDiv(){
+  // usedPipeDiv.html(`Side tracks: ${sideTrackCount}/${maxSideTracks}`);
+  usedPipeDiv.html(`Used pipes: ${usedPipeCount}/${maxPipeCount}`);
 }
 
 function updateStartDiv(){
@@ -222,7 +225,7 @@ function startStopAction(){
       sideTrackCount++;
       console.log("Side-track count" + sideTrackCount);
       // update side teack div
-      updateSideTrackDiv();
+      updateUsedPipeDiv();
     } //else {
     startCount++;
     console.log("Start count" + startCount);
@@ -253,6 +256,8 @@ function pullBack() {
     if (prevPosition > 0) {
       oldPaths.push(path.slice(prevPosition));
       path = path.slice(0, prevPosition);
+      usedPipeCount = Math.round(path.length / pipeLengthSteps) + 1;
+      updateUsedPipeDiv();
       pathPosition = path.length - 1;
       pos = path[pathPosition][0].copy();
       dir = path[pathPosition][1].copy();
@@ -398,7 +403,7 @@ function recomputeDrillingConstants(){
   // speedLabel.html("Game speed: 1/" + curRopMult);
   deltaSpeedCurGame = 1 / curRopDevider;
   turnAngleCurSpeed = turnAnglePerPixel * deltaSpeedCurGame;
-  pipeLengthSteps = pipeLengthPixels * curRopDevider;
+  pipeLengthSteps = Math.ceil(pipeLengthPixels * curRopDevider);
 
   // reseting the bit postion and steering
   pos = createVector(startingX, groundLevel + startingDepth);
@@ -424,8 +429,9 @@ function startDrill() {
   startCount = 0;
   // randomTurnResistance = 0;
   sideTrackCount = 0;
+  usedPipeCount = 1;
   updateStartDiv();
-  updateSideTrackDiv();
+  updateUsedPipeDiv();
   updateStuckDiv();
   boulders = [];
   bias = 1;
@@ -485,7 +491,8 @@ function updateStartButtonText() {
     updateDivWithLinkToThisSolution(false);
     startButton.html("try to beat");
     if (state == 'PAUSED' || state == 'STUCK') {
-      if (maxStarts - startCount <= 0 || maxSideTracks - sideTrackCount <= 0){
+      if (maxStarts - startCount <= 0 
+        || maxSideTracks - sideTrackCount <= 0){
         state = "LOSE";
       }
     }
@@ -550,8 +557,8 @@ function setup() {
   // Stat divs row 0
   startDiv = createDiv('Drill starts: ');
   updateStartDiv();
-  sideTracksDiv = createDiv('Side tracks: ');
-  updateSideTrackDiv();
+  usedPipeDiv = createDiv('Side tracks: ');
+  updateUsedPipeDiv();
   stuckDiv = createDiv('Bit damage: ');
   updateStuckDiv(); 
 
@@ -699,6 +706,10 @@ function getDoneForAgent(){
 }
 
 function getValueForAgent() {
+  // todo make uniform with lose
+  // todo add to state drill length, 
+  // todo add total drill length to the state when we have side tracks
+  // todo add length to the score
   if (finalScore != undefined) {
     return finalScore;
   } else {
@@ -833,6 +844,11 @@ function drill() {
   if (path.length % pipeLengthSteps == 0) {
     state = "CONNECTION";
     connectionCountDown = verticalPipeMovement;
+    usedPipeCount = Math.round(path.length / pipeLengthSteps) + 1;
+    updateUsedPipeDiv();
+    if (usedPipeCount > maxPipeCount){
+      state = "LOSE";
+    }
   }
   // Reduce uncertainty
   fogOfUncertinty.noStroke();
