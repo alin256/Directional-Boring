@@ -753,8 +753,9 @@ async function actionFromResponce(res, resolve = true) {
     //.then(function (json) {
     console.log("recieved " + JSON.stringify(json));
     let action = json["action_id"];
+    // todo consider putting 5000 in a better manner
     actionInformation = 
-      Math.round(prevAgentIntormation['value']) + ' '
+      Math.round(prevAgentIntormation['value'] * 5000) + ' '
       + json['info'] + ' '
       + action;
     if (typeof action == 'number') {
