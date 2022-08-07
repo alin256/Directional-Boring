@@ -712,12 +712,13 @@ function getValueForAgent() {
   // todo add to state drill length, 
   // todo add total drill length to the state when we have side tracks
   // todo add length to the score
+  let score = 0;
   if (finalScore != undefined) {
-    return finalScore;
+    score = finalScore;
   } else {
     // minus proximity to the goal
     // return 1000 - dist(pos.x, pos.y, goal.x + goal.w/2, groundLevel);
-    let score = 2500
+    score = 2000
       - dist(pos.x, pos.y, goal.x + goal.w / 2, groundLevel) * unfinnishedDistMult
       - usedPipeCount * pipeLengthMult
       - startCount * startMult
@@ -734,8 +735,8 @@ function getValueForAgent() {
       pos.y < groundLevel + goal.w + 2){
         score += 1000;
     }
-    return score;
   }
+  return score / 5000;
 }
 
 async function actionFromResponce(res, resolve = true) {
