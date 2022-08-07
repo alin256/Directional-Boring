@@ -717,12 +717,24 @@ function getValueForAgent() {
   } else {
     // minus proximity to the goal
     // return 1000 - dist(pos.x, pos.y, goal.x + goal.w/2, groundLevel);
-    return 2500
+    let score = 2500
       - dist(pos.x, pos.y, goal.x + goal.w / 2, groundLevel) * unfinnishedDistMult
       - usedPipeCount * pipeLengthMult
       - startCount * startMult
       - sideTrackCount * sideTrackMult
       - stuckCount * stuckMult;
+    // river ellipse width / 2 + startingX / 2, groundLevel, width / 2, width / 4
+    if (pos.x > width / 2 + startingX / 2 + width / 2 / 2 &&
+      pos.y < groundLevel + width / 4 / 2){
+        score += 1000;
+    }
+    // goal rect(goal.x - 2, groundLevel - goal.w - 2, goal.w + 4, goal.w + 4);
+    if (pos.x > goal.x - 2 &&
+      pos.x < goal.x + goal.w + 2 &&
+      pos.y < groundLevel + goal.w + 2){
+        score += 1000;
+    }
+    return score;
   }
 }
 
